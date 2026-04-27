@@ -183,6 +183,7 @@ export default function App() {
   const [pForm, setPForm]       = useState({name:'',gender:'male',category:'family-immediate',role:'',deceased:false});
   const [cForm, setCForm]       = useState({connType:'connected',relType:'none'});
   const svgRef = useRef();
+  const animationRef = useRef(null);
   const exportPNG = () => {
   const svg = svgRef.current;
   if (!svg) return;
@@ -227,21 +228,86 @@ export default function App() {
   };
 
   const onNodeMD = (e, id) => {
-    if (mode !== 'drag') return;
-    e.stopPropagation();
-    const p = persons.find(x => x.id===id);
-    if (p.isChild) return;
-    const pos = svgPos(e);
-    setDrag({id, ox:pos.x-p.x, oy:pos.y-p.y});
-  };
+  if (mode !== 'drag') return;
+  e.stopPropagation();
+
+  if (animationRef.current) {
+    cancelAnimationFrame(animationRef.current);
+  }
+
+  const p = persons.find(x => x.id === id);
+  if (p.isChild) return;
+
+  const pos = svgPos(e);
+
+  setDrag({
+    id,
+    ox: pos.x - p.x,
+    oy: pos.y - p.y,
+    lastX: p.x,
+    lastY: p.y,
+    vx: 0,
+    vy: 0
+  });
+};
 
   const onMM = e => {
-    if (!drag) return;
-    const pos = svgPos(e);
-    setPersons(prev => prev.map(p => p.id===drag.id
-      ? {...p, x:Math.max(55,Math.min(W-55,pos.x-drag.ox)), y:Math.max(55,Math.min(H-55,pos.y-drag.oy))}
-      : p));
+  if (!drag) return;
+
+  const pos = svgPos(e);
+  const newX = Math.max(55, Math.min(W - 55, pos.x - drag.ox));
+  const newY = Math.max(55, Math.min(H - 55, pos.y - drag.oy));
+
+  const vx = newX - drag.lastX;
+  const vy = newY - drag.lastY;
+
+  setDrag(d => ({
+    ...d,
+    lastX: newX,
+    lastY: newY,
+    vx,
+    vy
+  }));
+
+  setPersons(prev => prev.map(p =>
+    p.id === drag.id
+      ? { ...p, x: newX, y: newY }
+      : p
+  ));
+};
+  const releaseDrag = () => {
+  if (!drag) return;
+
+  let vx = drag.vx || 0;
+  let vy = drag.vy || 0;
+  const id = drag.id;
+
+  setDrag(null);
+
+  const animate = () => {
+    vx *= 0.82;
+    vy *= 0.82;
+
+    if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) {
+      animationRef.current = null;
+      return;
+    }
+
+    setPersons(prev => prev.map(p => {
+      if (p.id !== id) return p;
+
+      return {
+        ...p,
+        x: Math.max(55, Math.min(W - 55, p.x + vx)),
+        y: Math.max(55, Math.min(H - 55, p.y + vy))
+      };
+    }));
+
+    animationRef.current = requestAnimationFrame(animate);
   };
+
+  animationRef.current = requestAnimationFrame(animate);
+};
 
   const onNodeClick = (e, id) => {
     if (mode !== 'connect') return;
@@ -394,7 +460,7 @@ export default function App() {
           </div>
         )}
         <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} width="100%" height="100%"
-          onMouseMove={onMM} onMouseUp={()=>setDrag(null)} onMouseLeave={()=>setDrag(null)}
+          onMouseMove={onMM} onMouseUp={releaseDrag} onMouseLeave={releaseDrag}
           style={{display:'block',cursor:mode==='connect'?'crosshair':'default'}}>
           <rect width={W} height={H} fill="white"/>
           <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
