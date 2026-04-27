@@ -285,8 +285,8 @@ export default function App() {
   setDrag(null);
 
   const animate = () => {
-    vx *= 0.82;
-    vy *= 0.82;
+    vx *= -0.55;
+    vy *= -0.55;
 
     if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) {
       animationRef.current = null;
