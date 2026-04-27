@@ -188,8 +188,22 @@ export default function App() {
   const svg = svgRef.current;
   if (!svg) return;
 
+  const clonedSvg = svg.cloneNode(true);
+
+  clonedSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clonedSvg.setAttribute("width", W);
+  clonedSvg.setAttribute("height", H);
+
+  const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
+  style.textContent = `
+    text {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+  `;
+  clonedSvg.insertBefore(style, clonedSvg.firstChild);
+
   const serializer = new XMLSerializer();
-  const svgString = serializer.serializeToString(svg);
+  const svgString = serializer.serializeToString(clonedSvg);
 
   const svgBlob = new Blob([svgString], {
     type: "image/svg+xml;charset=utf-8"
@@ -199,14 +213,18 @@ export default function App() {
   const img = new Image();
 
   img.onload = () => {
+    const scale = 3; // increase to 4 for even higher quality
+
     const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
+    canvas.width = W * scale;
+    canvas.height = H * scale;
 
     const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+
     ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
+    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, 0, 0, W, H);
 
     URL.revokeObjectURL(url);
 
@@ -219,6 +237,9 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
   };
+
+  img.src = url;
+};
 
   img.src = url;
 };
