@@ -183,7 +183,44 @@ export default function App() {
   const [pForm, setPForm]       = useState({name:'',gender:'male',category:'family-immediate',role:'',deceased:false});
   const [cForm, setCForm]       = useState({connType:'connected',relType:'none'});
   const svgRef = useRef();
+  const exportPNG = () => {
+  const svg = svgRef.current;
+  if (!svg) return;
 
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svg);
+
+  const svgBlob = new Blob([svgString], {
+    type: "image/svg+xml;charset=utf-8"
+  });
+
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+
+    URL.revokeObjectURL(url);
+
+    const pngUrl = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = pngUrl;
+    link.download = "bower-ecogram.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  img.src = url;
+};
   const svgPos = e => {
     const r = svgRef.current.getBoundingClientRect();
     return {x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(H/r.height)};
@@ -276,9 +313,26 @@ export default function App() {
             </button>
           ))}
         </div>
-        <button onClick={openAdd} style={{width:'100%',padding:'7px 0',background:'#2563EB',color:'#fff',border:'none',borderRadius:5,fontSize:12,cursor:'pointer',marginBottom:18}}>
-          + Add Person
-        </button>
+        <button onClick={openAdd} style={{width:'100%',padding:'7px 0',background:'#2563EB',color:'#fff',border:'none',borderRadius:5,fontSize:12,cursor:'pointer',marginBottom:8}}>
+  + Add Person
+</button>
+
+<button
+  onClick={exportPNG}
+  style={{
+    width:'100%',
+    padding:'7px 0',
+    background:'#059669',
+    color:'#fff',
+    border:'none',
+    borderRadius:5,
+    fontSize:12,
+    cursor:'pointer',
+    marginBottom:18
+  }}
+>
+  Export as PNG
+</button>
         <Sec label="Categories">
           {CATS.map(cat=>(
             <FRow key={cat.id} checked={!hidCat.has(cat.id)} onChange={()=>tog(setHidCat,cat.id)}>
