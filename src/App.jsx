@@ -267,7 +267,7 @@ export default function App() {
   return (
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,-apple-system,sans-serif',fontSize:13}}>
       <div style={{width:228,background:'#fff',borderRight:'1px solid #E5E7EB',padding:'14px 12px',overflowY:'auto',flexShrink:0,display:'flex',flexDirection:'column'}}>
-        <div style={{fontWeight:700,fontSize:14,color:'#111827',marginBottom:14}}>Sociogram Builder</div>
+        <div style={{fontWeight:700,fontSize:14,color:'#111827',marginBottom:14}}>Bower Ecogram Builder</div>
         <div style={{display:'flex',gap:4,marginBottom:10}}>
           {[['drag','Move'],['connect','Connect']].map(([m,lbl])=>(
             <button key={m} onClick={()=>{setMode(m);setFirst(null);}}
