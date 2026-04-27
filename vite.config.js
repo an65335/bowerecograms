@@ -6,6 +6,6 @@ export default defineConfig({
 
   plugins: [react()],
 
-  base: '/student-sociogram-tool/'
+  base: '/bowerecograms/'
 
 })
