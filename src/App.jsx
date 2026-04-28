@@ -183,8 +183,9 @@ export default function App() {
   const [pForm, setPForm]       = useState({name:'',gender:'male',category:'family-immediate',role:'',deceased:false});
   const [cForm, setCForm]       = useState({connType:'connected',relType:'none'});
   const svgRef = useRef();
-  const animationRef = useRef(null);
-  const exportPNG = () => {
+const animationRef = useRef(null);
+
+const exportPNG = () => {
   const svg = svgRef.current;
   if (!svg) return;
 
@@ -213,7 +214,7 @@ export default function App() {
   const img = new Image();
 
   img.onload = () => {
-    const scale = 3; // increase to 4 for even higher quality
+    const scale = 3;
 
     const canvas = document.createElement("canvas");
     canvas.width = W * scale;
@@ -237,9 +238,6 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
   };
-
-  img.src = url;
-};
 
   img.src = url;
 };
